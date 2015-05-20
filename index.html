@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html manifest="cache.manifest">
+<head>
+	<meta charset="UTF-8">
+	<title>板书</title>
+	<style type="text/css">
+		.blankboardpage{
+			border: solid;
+		}
+	</style>
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="js/raphael-2.0.1.js"></script>
+	<script type="text/javascript" src="js/json2.min.js"></script>
+	<script type="text/javascript" src="js/raphael.sketchpad.js"></script>
+	<script type="text/javascript" src="js/socket.io.js"></script>
+	
+</head>
+<body>
+<div id="pagecontainer"></div>
+<!-- <div id="editor"></div> -->
+<input type="button" value="新建板书页" id="newPageButton" />
+<input type="button" value="更改画笔颜色" id="changeColorButton" />
+<input type="button" value="更改画笔粗细" id="changeThickButton" />
+<input type="button" value="更改画笔透明度" id="changeAlphaButton" />
+<input type="button" value="撤销" id="undoButton" />
+<input type="button" value="重做" id="redoButton" />
+<input type="button" value="清空" id="clearButton" />
+<input type="button" value="删除模式" id="eraserModeButton" />
+<input type="button" value="绘图模式" id="editModeButton" />
+<input type="button" value="视图模式" id="viewModeButton" />
+<input type="button" value="允许某人绘图" id="allowButton" />
+<input type="button" value="不允许某人绘图" id="refuseButton" />
+<input type="type" value="" id="useridInput" placeholder="userid" />
+</body>
+<script type="text/javascript">
+	
+	// var sketchpad=Raphael.sketchpad('editor',{
+	// 	width:400,
+	// 	height:400,
+	// 	editing:true
+	// })
+	
+	
+</script>
+<script type="text/javascript" src="js/soc.js"></script>
+</html>

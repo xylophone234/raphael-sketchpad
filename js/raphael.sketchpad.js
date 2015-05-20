@@ -82,6 +82,8 @@
 
 		// The default pen.
 		var _pen = new Pen();
+
+		var _upCallback = function() {};
 		
 		
 		// Public Methods
@@ -98,6 +100,8 @@
 		self.container = function() {
 			return _container;
 		};
+
+		self.domid = _container[0].id;
 		
 		self.pen = function(value) {
 			if (value === undefined) {
@@ -106,6 +110,28 @@
 			_pen = value;
 			return self; // function-chaining
 		};
+
+		self.addPath = function(stroke){
+			stroke.path=string_to_svg_path(stroke.path)
+			
+			var type = stroke.type;
+			_paper[type]()
+				.attr(stroke)
+				.click(_pathclick);
+			
+			_strokes.push(stroke);
+				
+			_action_history.add({
+				type: "stroke",
+				stroke: stroke
+			});
+			
+			_fire_change();
+		}
+
+		self.setUpCallback = function(cb){
+			_upCallback=cb;
+		}
 		
 		// Convert an SVG path into a string, so that it's smaller when JSONified.
 		// This function is used by json().
@@ -267,11 +293,11 @@
 
 					// iPhone Events
 					var agent = navigator.userAgent;
-					if (agent.indexOf("iPhone") > 0 || agent.indexOf("iPod") > 0) {
+					// if (agent.indexOf("iPhone") > 0 || agent.indexOf("iPod") > 0) {
 						$(_container).unbind("touchstart", _touchstart);
 						$(_container).unbind("touchmove", _touchmove);
 						$(_container).unbind("touchend", _touchend);
-					}
+					// }
 				} else {
 					// Cursor is crosshair, so it looks like we can do something.
 					$(_container).css("cursor", "crosshair");
@@ -285,11 +311,11 @@
 
 					// iPhone Events
 					var agent = navigator.userAgent;
-					if (agent.indexOf("iPhone") > 0 || agent.indexOf("iPod") > 0) {
+					// if (agent.indexOf("iPhone") > 0 || agent.indexOf("iPod") > 0) {
 						$(_container).bind("touchstart", _touchstart);
 						$(_container).bind("touchmove", _touchmove);
 						$(_container).bind("touchend", _touchend);
-					}
+					// }
 				}
 			} else {
 				// Reverse the settings above.
@@ -301,11 +327,11 @@
 				
 				// iPhone Events
 				var agent = navigator.userAgent;
-				if (agent.indexOf("iPhone") > 0 || agent.indexOf("iPod") > 0) {
+				// if (agent.indexOf("iPhone") > 0 || agent.indexOf("iPod") > 0) {
 					$(_container).unbind("touchstart", _touchstart);
 					$(_container).unbind("touchmove", _touchmove);
 					$(_container).unbind("touchend", _touchend);
-				}
+				// }
 			}
 			
 			return self; // function-chaining
@@ -396,10 +422,25 @@
 		};
 
 		function _mouseup(e) {
+			// console.log('mouseup')
 			_enable_user_select();
 			
 			var path = _pen.finish(e, self);
 			
+			
+			if(path!=null){
+				_addPath(path);
+				var stroke = path.attr();
+				stroke.type = path.type;
+				if(typeof stroke.path == "object"){
+					stroke.path=svg_path_to_string(stroke.path);
+				}
+				_upCallback(stroke);
+			}
+			
+		};
+
+		function _addPath(path) {
 			if (path != null) {
 				// Add event when clicked.
 				path.click(_pathclick);
@@ -417,7 +458,7 @@
 				
 				_fire_change();
 			}
-		};
+		}
 		
 		function _touchstart(e) {
 			e = e.originalEvent;
