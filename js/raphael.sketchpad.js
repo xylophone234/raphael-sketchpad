@@ -172,7 +172,10 @@
 						stroke.path = svg_path_to_string(stroke.path);
 					}
 				}
-				return JSON.stringify(_strokes);
+				return JSON.stringify({
+					_strokes:_strokes,
+					_action_history:_action_history.toJson()
+				});
 			}
 			
 			return self.strokes(JSON.parse(value));
@@ -191,11 +194,15 @@
 						stroke.path = string_to_svg_path(stroke.path);
 					}
 				}
-				
-				_action_history.add({
-					type: "batch",
-					strokes: jQuery.merge([], _strokes) // Make a copy.
-				})
+
+				if(value._action_history){
+					_action_history.fromJson(value._action_history);
+				}else{
+					_action_history.add({
+						type: "batch",
+						strokes: jQuery.merge([], _strokes) // Make a copy.
+					})
+				}
 				
 				_redraw_strokes();
 				_fire_change();
@@ -569,6 +576,22 @@
 				_current_strokes = null;
 			}
 		};
+
+		self.fromJson = function(data) {
+			_current_state = data._current_state;
+			_current_strokes = data._current_strokes;
+			_freeze_state = data._freeze_state;
+			_history = data._history;
+		}
+
+		self.toJson = function() {
+			return {
+				_current_state : _current_state,
+				_current_strokes : _current_strokes,
+				_freeze_state : _freeze_state,
+				_history : _history
+			}
+		}
 		
 		// Rebuild the strokes from history.
 		self.current_strokes = function() {
