@@ -1,4 +1,4 @@
-(function() {
+var RaphaelSketchpadManage = function() {
 	var backendUrl = 'http://m.tfedu.net:2300/blackboard/';
 	//socket 相关
 	var url = "http://m.tfedu.net:33206";
@@ -31,196 +31,10 @@
 	};
 	var currentPad;
 
-	//获取url值
-	var getUrlParam = function(name) {
-		var str = window.location.search.substr(1);
-		if (!str) return null;
-		var paramStr = str.split('&');
-		var params = {};
-		for (var i = 0; i < paramStr.length; i++) {
-			var keyValue = paramStr[i].split('=');
-			if (keyValue[0] == name) return keyValue[1];
-		}
-		return null;
-	}
-
 	var pageCount = 0;
-	/**
-	 * 新建板书页
-	 * @return {[type]} [description]
-	 */
-	var createNewPage = function() {
-			var id = 'editor' + pageCount;
-			pageCount++;
-			$('#pagecontainer').append('<div id="' + id + '" class="blankboardpage"></div>');
-			var sketchpad = Raphael.sketchpad(id, {
-				width: 800,
-				height: 400,
-				editing: true
-			})
-			sketchpads[id] = sketchpad;
-			currentPad = sketchpad;
-			console.log(currentPad);
 
+	var self=this;
 
-			var onAddPath = function(path) {
-				if (path != null) {
-					forwardGroupAddPath(groupid, {
-						domid: id,
-						path: path
-					})
-				}
-			}
-
-			sketchpad.setUpCallback(onAddPath);
-		}
-		/**
-		 * 修改画笔颜色
-		 *
-		 * @param  {[type]} color '#ff0000'
-		 * @return {[type]}       [description]
-		 */
-	var changeColor = function(color) {
-			currentPad.pen().color(color)
-		}
-		/**
-		 * 修改画笔粗细
-		 * 1-10
-		 * @param  {[type]} thick [description]
-		 * @return {[type]}       [description]
-		 */
-	var changeThick = function(thick) {
-			currentPad.pen().width(thick)
-		}
-		/**
-		 * 修改透明度
-		 * 0-1
-		 * @param  {[type]} alpha [description]
-		 * @return {[type]}       [description]
-		 */
-	var chagneAlpha = function(alpha) {
-			currentPad.pen().opacity(alpha)
-		}
-		/**
-		 * 撤销
-		 * @return {[type]} [description]
-		 */
-	var undo = function() {
-			currentPad.undo();
-			forwardGroupUndo(groupid, {
-				domid: currentPad.domid
-			});
-		}
-		/**
-		 * [redo description]
-		 * @return {[type]} [description]
-		 */
-	var redo = function() {
-			currentPad.redo();
-			forwardGroupRedo(groupid, {
-				domid: currentPad.domid
-			});
-		}
-		/**
-		 * 清空
-		 * @return {[type]} [description]
-		 */
-	var clear = function() {
-			currentPad.clear();
-			forwardGroupClear(groupid, {
-				domid: currentPad.domid
-			});
-		}
-		/**
-		 * 更改模式
-		 * mode=true 可以绘图
-		 * mode=fale 不能绘图，
-		 * mode='erase' 橡皮擦模式
-		 * @param  {[type]} mode [description]
-		 * @return {[type]}      [description]
-		 */
-	var changeMode = function(mode) {
-			currentPad.editing(mode);
-		}
-		/**
-		 * 删除当前页
-		 * @param  {[type]} id [description]
-		 * @return {[type]}    [description]
-		 */
-	var deletePage = function(id) {
-
-	}
-
-	var save = function() {
-		var name = $('#blackboadInput').val();
-		var padList = [];
-		for (var domid in sketchpads) {
-			padList.push({
-				domid: domid,
-				strokeList: sketchpads[domid].json()
-			})
-		}
-		$.ajax({
-			url: backendUrl,
-			type: 'POST',
-			data: {
-				name: name,
-				blackboard: padList
-			},
-			success: function() {
-				console.log('saved ok')
-			}
-		})
-	}
-
-
-
-	var initButtonListener = function() {
-
-
-		$('#newPageButton').click(createNewPage);
-
-		$('#changeColorButton').click(function() {
-			changeColor(Math.random() > 0.5 ? '#8800ff' : '#00ff00');
-		})
-
-		$('#changeAlphaButton').click(function() {
-			chagneAlpha(Math.random())
-		});
-
-		$('#changeThickButton').click(function() {
-			changeThick(Math.random() * 10 + 2)
-		});
-
-		$('#undoButton').click(undo);
-		$('#redoButton').click(redo);
-		$('#clearButton').click(clear);
-
-		$('#eraserModeButton').click(function() {
-			changeMode('erase')
-		});
-		$('#editModeButton').click(function() {
-			changeMode(true)
-		});
-		$('#viewModeButton').click(function() {
-			changeMode(false)
-		});
-
-		$('#allowButton').click(function() {
-			forwardAllowDraw($("#useridInput").val(), {
-				domid: currentPad.domid
-			})
-		});
-		$('#refuseButton').click(function() {
-			forwardOnlyView($("#useridInput").val(), {
-				domid: currentPad.domid
-			})
-		});
-		$('#saveButton').click(function() {
-			save();
-		});
-
-	}
 
 	/**
 	 * 初始化socket侦听
@@ -232,7 +46,7 @@
 		})
 		socket.on('joinGroup', function(data) {
 			console.log('joinGroup', data);
-			if(role=='teacher'){
+			if (role == 'teacher') {
 
 			}
 		})
@@ -297,7 +111,7 @@
 	 * @param  {[type]} forcenew [强制使用新的物理连接，]
 	 * @return {[type]}          [description]
 	 */
-	var connect = function(forcenew) {
+	self.connect = function(forcenew) {
 			if (forcenew) {
 				socket = io.connect(url, {
 					'force new connection': true
@@ -311,7 +125,7 @@
 		 * @param  {[type]} socket [description]
 		 * @return {[type]}        [description]
 		 */
-	var disconnect = function(socket) {
+	self.disconnect = function(socket) {
 			socket.disconnect();
 		}
 		//==================================logic=====================
@@ -321,7 +135,7 @@
 		 * @param  {[string]} appid  [description]
 		 * @return {[type]}        [description]
 		 */
-	var login = function(userid, appid) {
+	self.login = function(userid, appid) {
 			socket.emit('uploadUserid', {
 				userid: userid,
 				appid: appid
@@ -339,7 +153,7 @@
 		 * @param  {[type]} groupid [description]
 		 * @return {[type]}         [description]
 		 */
-	var joinGroup = function(groupid) {
+	self.joinGroup = function(groupid) {
 			socket.emit('joinGroup', {
 				groupid: groupid
 			})
@@ -505,9 +319,9 @@
 	}
 
 	var onRemoteOnlyView = function(params) {
-			var pad = sketchpads[params.domid];
-			pad && pad.editing(false);
-		}
+		var pad = sketchpads[params.domid];
+		pad && pad.editing(false);
+	}
 
 	var forwardFouceUpdate = function(userid, params) {
 		socket.emit('forward', {
@@ -529,8 +343,8 @@
 
 	var onRemoteFouceUpdate = function(blackbordList) {
 		$('#pagecontainer').html('');
-		for(var i=0;i<blackbordList.length;i++){
-			var temp=blackbordList[i];
+		for (var i = 0; i < blackbordList.length; i++) {
+			var temp = blackbordList[i];
 			createNewPage();
 			currentPad.json(temp.path);
 		}
@@ -570,16 +384,146 @@
 		})
 	}
 
-	var init = function() {
-		groupid = getUrlParam('groupid');
-		userid = getUrlParam('userid');
-		role = getUrlParam('role');
-		var blackboardid = getUrlParam('blackboardid');
-		connect(true);
+	/**
+	 * 新建板书页
+	 * @return {[type]} [description]
+	 */
+	self.createNewPage = function() {
+			var id = 'editor' + pageCount;
+			pageCount++;
+			$('#pagecontainer').append('<div id="' + id + '" class="blankboardpage"></div>');
+			var sketchpad = Raphael.sketchpad(id, {
+				width: 800,
+				height: 400,
+				editing: true
+			})
+			sketchpads[id] = sketchpad;
+			currentPad = sketchpad;
+			console.log(currentPad);
+
+
+			var onAddPath = function(path) {
+				if (path != null) {
+					forwardGroupAddPath(groupid, {
+						domid: id,
+						path: path
+					})
+				}
+			}
+
+			sketchpad.setUpCallback(onAddPath);
+		}
+		/**
+		 * 修改画笔颜色
+		 *
+		 * @param  {[type]} color '#ff0000'
+		 * @return {[type]}       [description]
+		 */
+	self.changeColor = function(color) {
+			currentPad.pen().color(color)
+		}
+		/**
+		 * 修改画笔粗细
+		 * 1-10
+		 * @param  {[type]} thick [description]
+		 * @return {[type]}       [description]
+		 */
+	self.changeThick = function(thick) {
+			currentPad.pen().width(thick)
+		}
+		/**
+		 * 修改透明度
+		 * 0-1
+		 * @param  {[type]} alpha [description]
+		 * @return {[type]}       [description]
+		 */
+	self.chagneAlpha = function(alpha) {
+			currentPad.pen().opacity(alpha)
+		}
+		/**
+		 * 撤销
+		 * @return {[type]} [description]
+		 */
+	self.undo = function() {
+			currentPad.undo();
+			forwardGroupUndo(groupid, {
+				domid: currentPad.domid
+			});
+		}
+		/**
+		 * [redo description]
+		 * @return {[type]} [description]
+		 */
+	self.redo = function() {
+			currentPad.redo();
+			forwardGroupRedo(groupid, {
+				domid: currentPad.domid
+			});
+		}
+		/**
+		 * 清空
+		 * @return {[type]} [description]
+		 */
+	self.clear = function() {
+			currentPad.clear();
+			forwardGroupClear(groupid, {
+				domid: currentPad.domid
+			});
+		}
+		/**
+		 * 更改模式
+		 * mode=true 可以绘图
+		 * mode=fale 不能绘图，
+		 * mode='erase' 橡皮擦模式
+		 * @param  {[type]} mode [description]
+		 * @return {[type]}      [description]
+		 */
+	self.changeMode = function(mode) {
+			currentPad.editing(mode);
+		}
+		/**
+		 * 删除当前页
+		 * @param  {[type]} id [description]
+		 * @return {[type]}    [description]
+		 */
+	self.deletePage = function(id) {
+
+	}
+
+	self.save = function() {
+		var name = $('#blackboadInput').val();
+		var padList = [];
+		for (var domid in sketchpads) {
+			padList.push({
+				domid: domid,
+				strokeList: sketchpads[domid].json()
+			})
+		}
+		$.ajax({
+			url: backendUrl,
+			type: 'POST',
+			data: {
+				name: name,
+				blackboard: padList
+			},
+			success: function() {
+				console.log('saved ok')
+			}
+		})
+	}
+
+
+
+	self.init = function(opt) {
+		groupid = opt.groupid;
+		userid = opt.userid;
+		role = opt.role;
+		var blackboardid = opt.blackboardid;
+		self.connect(true);
 		initSocketListener();
-		initButtonListener();
-		login(userid, appid);
-		joinGroup(groupid);
+		// self.initButtonListener();
+		self.login(userid, appid);
+		self.joinGroup(groupid);
 		if (blackboardid) {
 			loadBlackboard(blackboardid);
 		} else {
@@ -596,8 +540,90 @@
 		}
 	}
 
-	init();
+	
 
 
 
-})()
+}
+
+//获取url值
+var getUrlParam = function(name) {
+	var str = window.location.search.substr(1);
+	if (!str) return null;
+	var paramStr = str.split('&');
+	var params = {};
+	for (var i = 0; i < paramStr.length; i++) {
+		var keyValue = paramStr[i].split('=');
+		if (keyValue[0] == name) return keyValue[1];
+	}
+	return null;
+}
+
+
+var initButtonListener = function(manage) {
+
+
+	$('#newPageButton').click(manage.createNewPage);
+
+	$('#changeColorButton').click(function() {
+		manage.changeColor(Math.random() > 0.5 ? '#8800ff' : '#00ff00');
+	})
+
+	$('#changeAlphaButton').click(function() {
+		manage.chagneAlpha(Math.random())
+	});
+
+	$('#changeThickButton').click(function() {
+		manage.changeThick(Math.random() * 10 + 2)
+	});
+
+	$('#undoButton').click(manage.undo);
+	$('#redoButton').click(manage.redo);
+	$('#clearButton').click(manage.clear);
+
+	$('#eraserModeButton').click(function() {
+		manage.changeMode('erase')
+	});
+	$('#editModeButton').click(function() {
+		manage.changeMode(true)
+	});
+	$('#viewModeButton').click(function() {
+		manage.changeMode(false)
+	});
+
+	$('#allowButton').click(function() {
+		forwardAllowDraw($("#useridInput").val(), {
+			domid: currentPad.domid
+		})
+	});
+	$('#refuseButton').click(function() {
+		forwardOnlyView($("#useridInput").val(), {
+			domid: currentPad.domid
+		})
+	});
+	$('#saveButton').click(function() {
+		manage.save();
+	});
+
+}
+
+var init = function() {
+	var groupid = getUrlParam('groupid');
+	var userid = getUrlParam('userid');
+	var role = getUrlParam('role');
+	var blackboardid = getUrlParam('blackboardid');
+	
+	var manage=new RaphaelSketchpadManage();
+	manage.init({
+		groupid:groupid,
+		userid:userid,
+		role:role,
+		blackboardid:blackboardid
+	})
+
+	initButtonListener(manage);
+	
+	
+}
+
+init();
